@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图文制作器</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            transition: opacity 0.3s ease;
+        }
+        .container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            padding: 0 20px;
+            box-sizing: border-box;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        img {
+            width: 100%;
+            height: auto;
+            display: block;
+            position: relative;
+            z-index: 1;
+        }
+        .overlay-image {
+            position: absolute;
+            z-index: 2;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            cursor: move;
+        }
+        .text {
+            position: absolute;
+            font-size: 20px;
+            pointer-events: auto;
+            z-index: 3;
+            cursor: pointer;
+            writing-mode: horizontal-tb;
+        }
+        .button-group {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            width: 80%;
+            max-width: 300px;
+        }
+        .toggle-group {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .toggle-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .slider-container, .input-container {
+            margin-top: 20px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-left: 20px;
+            margin-right: 20px;
+        }
+        .slider-label {
+            margin-bottom: 5px;
+            text-align: center;
+        }
+        #customTextsInput {
+            width: 100%;
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .progress-bar-container {
+            width: 80%;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .loading-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .loading-intro {
+            font-size: 16px;
+            text-align: center;
+            max-width: 600px;
+            margin-bottom: 30px;
+            color: #666;
+            padding: 0 20px;
+        }
+        .refresh-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .source-container {
+            margin-top: 20px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-left: 20px;
+            margin-right: 20px;
+        }
+        .source-label {
+            margin-bottom: 5px;
+            text-align: center;
+        }
+        .source-input {
+            width: 100%;
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .file-upload {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .confirm-button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 30%;
+        }
+        .centered-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        .centered-section input {
+            width: 100%;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .custom-text-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .custom-text-input {
+            width: 100%;
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .custom-text-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .image-upload-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .image-upload-button {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        .upload-confirm-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 80%;
+            max-width: 300px;
+        }
+        .custom-api-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .custom-api-input {
+            width: 100%;
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .api-confirm-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 80%;
+            max-width: 300px;
+        }
+        .centered-button {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .centered-button button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 30%;
+        }
+
+        #linkSection {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        #linkSection .source-input {
+            width: 100%;
+            text-align: center;
+        }
+
+        .overlay-image-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .overlay-image-container img {
+            position: absolute;
+            pointer-events: auto;
+            cursor: move;
+        }
+
+        .overlay-settings {
+            display: none;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .overlay-settings select {
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 10px;
+        }
+
+        .overlay-settings .input-container {
+            display: none;
+            width: 80%;
+            max-width: 300px;
+            margin: 0 auto 10px;
+        }
+
+        .overlay-settings button {
+            display: none;
+            width: 80%;
+            max-width: 300px;
+            margin: 5px auto;
+        }
+
+        #overlayImageRotationSlider-container,
+        #overlayImageSizeSlider-container,
+        #overlayImageCountSlider-container {
+            display: none;
+            width: 80%;
+            max-width: 300px;
+            margin: 0 auto 10px;
+        }
+
+        .text-control-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .text-control-container {
+            display: none;
+            width: 100%;
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #generateTextButton {
+            display: block;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+            margin: 5px 0;
+        }
+        #refreshTextButton {
+            display: none;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+            margin: 5px 0;
+        }
+        #textColorButton {
+            display: none;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+            margin: 5px 0;
+        }
+        #dragTextButton {
+            display: none;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+            margin: 5px 0;
+        }
+        #textCountSliderContainer {
+            display: none;
+            width: 80%;
+            max-width: 300px;
+            margin: 5px 0;
+        }
+        #textSizeSliderContainer {
+            display: none;
+            width: 80%;
+            max-width: 300px;
+            margin: 5px 0;
+        }
+        .text-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+        select {
+            border: 1px solid pink;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-screen" id="loadingScreen">
+        <h1 class="loading-title">正在加载内容</h1>
+        <h3>请确保VPN网络稳定</h3>
+        <p class="loading-intro">请稍候，我们正在准备图片和文本...</p>
+        <p class="loading-intro">点击文本跳转到随机的色情网站...</p>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <button id="refreshLoadingButton" class="refresh-button">直接进入</button>
+    </div>
+
+    <div id="mainContent" style="opacity: 0; display: none;">
+        <div class="container">
+            <div id="textContainer" class="text text-center"></div>
+            <img id="randomImage" src="" alt="图片显示出错请刷新图片显示">
+        </div>
+
+        <div class="button-group">
+            <button id="refreshImageButton" class="button">随机拼贴淫荡图文</button>
+        </div>
+
+        <div class="button-group">
+            <button id="generateOverlayButton" class="button">随机生成叠加图片</button>
+        </div>
+
+        <div class="button-group">
+            <button id="generateTextButton" class="button">随机生成文本</button>
+        </div>
+
+        <div class="source-container">
+            <label class="source-label" for="imageSourceSelect">背景图片来源选择:</label>
+            <select id="imageSourceSelect" class="source-input dropdown-button">
+                <option value="default">默认背景图片</option>
+                <option value="upload">上传本地背景图片</option>
+                <option value="custom-link">填写背景图片链接</option>
+                <option value="custom-api">填写背景图片API</option>
+            </select>
+        </div>
+        <div id="apiSection" class="custom-api-container" style="display: none;">
+            <input type="text" id="customApiInput" class="custom-api-input" placeholder="请输入背景图片的API">
+            <div class="centered-button">
+                <button id="apiConfirmButton" class="api-confirm-button uniform-button">确认</button>
+            </div>
+        </div>
+        <div id="uploadSection" class="image-upload-container" style="display: none;">
+            <input type="file" id="imageUploadInput" class="image-upload-button" accept="image/*" multiple>
+            <div class="centered-button">
+                <button id="uploadConfirmButton" class="upload-confirm-button uniform-button">确认</button>
+            </div>
+        </div>
+        <div id="linkSection" class="centered-section" style="display: none;">
+            <input type="text" id="customLinkInput" class="source-input" placeholder="请输入背景图片的网络链接">
+            <div class="centered-button">
+                <button id="linkConfirmButton" class="confirm-button uniform-button">确认</button>
+            </div>
+        </div>
+
+        <div class="source-container">
+            <label class="source-label" for="overlayImageSourceSelect">叠加图片来源选择:</label>
+            <select id="overlayImageSourceSelect" class="source-input dropdown-button">
+                <option value="blank">空白叠加图片</option>
+                <option value="upload">上传本地叠加图片</option>
+                <option value="custom-link">填写叠加图片链接</option>
+            </select>
+        </div>
+        <div id="overlayImageUploadSection" class="image-upload-container" style="display: none;">
+            <input type="file" id="overlayImageUploadInput" class="image-upload-button" accept="image/*" multiple>
+            <div class="centered-button">
+                <button id="overlayImageUploadConfirmButton" class="upload-confirm-button uniform-button">确认</button>
+            </div>
+        </div>
+        <div id="overlayImageLinkSection" class="centered-section" style="display: none;">
+            <input type="text" id="overlayImageLinkInput" class="source-input" placeholder="请输入叠加图片的网络链接">
+            <div class="centered-button">
+                <button id="overlayImageLinkConfirmButton" class="confirm-button uniform-button">确认</button>
+            </div>
+        </div>
+        
+        <div class="source-container">
+            <label class="source-label" for="overlayImageSettingsSelect">叠加图片设置:</label>
+            <select id="overlayImageSettingsSelect" class="source-input dropdown-button">
+                <option value="none">默认操作</option>
+                <option value="rotate">旋转图片</option>
+                <option value="resize">缩放图片</option>
+                <option value="drag">拖拽图片</option>
+                <option value="count">图片数量</option>
+            </select>
+        </div>
+        
+        <div id="overlaySettings" class="overlay-settings">
+            <div id="overlayImageRotationSlider-container" class="input-container">
+                <label class="slider-label" for="overlayImageRotationSlider">叠加图片旋转:</label>
+                <input type="range" id="overlayImageRotationSlider" min="0" max="360" value="0">
+            </div>
+            <div id="overlayImageSizeSlider-container" class="input-container">
+                <label class="slider-label" for="overlayImageSizeSlider">叠加图片缩放:</label>
+                <input type="range" id="overlayImageSizeSlider" min="10" max="100" value="50">
+            </div>
+            <div id="overlayImageCountSlider-container" class="input-container">
+                <label class="slider-label" for="overlayImageCountSlider">叠加图片数量:</label>
+                <input type="range" id="overlayImageCountSlider" min="1" max="10" value="1">
+            </div>
+            <button id="dragOverlayButton" class="toggle-button uniform-button">叠加图片拖拽</button>
+        </div>
+
+        <div class="source-container">
+            <label class="source-label" for="textSourceSelect">文本来源选择:</label>
+            <select id="textSourceSelect" class="source-input dropdown-button">
+                <option value="default">淫词荡语</option>
+                <option value="second">媚黑无脑</option>
+                <option value="third">雌堕羞辱</option>
+                <option value="custom">输入文本</option>
+            </select>
+        </div>
+        <div id="customTextSection" class="custom-text-container" style="display: none;">
+            <input type="text" id="customTextsInput" class="custom-text-input" placeholder="请输入自定义文本，用空格分隔">
+            <div class="centered-button">
+                <button id="customTextConfirmButton" class="custom-text-button uniform-button">确认</button>
+            </div>
+        </div>
+        
+        <div class="source-container">
+            <label class="source-label" for="textControlSelect">文本控制:</label>
+            <select id="textControlSelect" class="source-input dropdown-button">
+                <option value="none">默认操作</option>
+                <option value="refresh">刷新文本位置</option>
+                <option value="color">切换文本颜色</option>
+                <option value="drag">拖拽文本位置</option>
+                <option value="count">增减文本数量</option>
+                <option value="size">修改文本尺寸</option>
+            </select>
+        </div>
+        <div id="textControlContainer" class="text-control-container">
+            <button id="refreshTextButton" class="button uniform-button">刷新文本位置</button>
+            <button id="textColorButton" class="toggle-button uniform-button">随机文本颜色</button>
+            <button id="dragTextButton" class="toggle-button uniform-button">拖拽文本位置</button>
+            <div id="textCountSliderContainer" class="text-slider-container">
+                <label class="slider-label" for="textCountSlider">增减文本数量:</label>
+                <input type="range" id="textCountSlider" min="1" max="20" value="10">
+            </div>
+            <div id="textSizeSliderContainer" class="text-slider-container">
+                <label class="slider-label" for="fontSizeSlider">修改字体尺寸:</label>
+                <input type="range" id="fontSizeSlider" min="10" max="60" value="30">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const defaultTextLibrary = [
+            "舔逼","骚","冒着热气","母牛","洗脑","淫妻","母狗","小阴蒂","轮奸","交合处","骚逼","淫足","淫奸","嘴穴","奸淫","淫脚","乳交","放弃尊严","盯榨吸脑","双腿发软",
+            "糜烂","熏到翻白眼","哼哧哼哧","淫腻","高贵浓妆脸","浑圆","肥美","淫臀","巨乳","风骚口红","唇舌","淫毒","玻尿酸整容奶","肥奶","肥乳","驴奶","烟熏浓妆脸","浓妆骚脸","顶胯",
+            "嘴屄","淫肉","肛交","粉嫩","贱奴","母驴","雌服","卵水","雌骚","肥鲍熟缝","浓密阴毛","浓稠","闷穴","变态","骚熟","吸脑淫毒","婊子","外翻","淫熟油肉","肥臀",
+"爽","暖屌肉洞","鸡巴套子","粘糊暖滑","屌套","真空口交","唇肉","吸屌","驴脸","媚穴","高潮","惨叫","母猪","浪荡肥逼","肉足","肉臀","肥腚巨尻","淫肥","白嫩","精致",
+"站街婊","避孕套","大肉逼","骚阴唇","阴蒂","肥厚","腥臊湿咸","免费","欲望","贱畜","贱货","烂逼","扣弄","拉扯阴唇","母蛆","妖艳油婊脸","荡妇","丧智","口穴","咕噜咕噜",
+"饱满","雌熟","肉壶","淫靡","雌熟腻汗","黏腻肉洞","淫软","超快速真空口交","性欲","淫骚","交配","烂逼","痴女","流水","高潮脸","站街","淫荡骚贱","婊妈","重口","羞辱",
+"玩弄","下贱","烂婊子","公共厕所","烂逼","淫荡","雌穴","翻白眼","深吞肉屌","播种","失去理智","肉穴","爱液","工口","妩媚","淫荡","口交脸","流油","肏弄","骚味",
+"深邃臀缝","圣水","女王","亲吻","反差","高贵冷艳","人模人样","舔舐","无套","淫贱","嫩肉","流水","猪臀","淫语","哼唧哼唧","白虎肥鲍","爆溢","淫靡","噗湫噗湫","倒贴",
+"淫贱肥舌","厚实巨硕","安产","淫靡肉响","肥熟","浪肉","淫肥","呻吟","油汗","双乳乱甩","美腿","红晕","骚屄","肉便器","鸡巴抚弄所","咕啾咕啾","淫骚","强奸","性爱","抽插骚穴",
+"灌满","肥屄","迎合","甩奶","淫叫","淫靡","噗湫噗湫","淫腿","雌熟","媚屌母畜","跪服","侍奉","吻上唇印","熟妇","淫穴","肥骚屁股","骚乳淫身","垂涎欲滴","潮红","失禁",
+"淫乱骚贱","操","飞机杯","精盆","性欲处理器","淫纹","齁齁齁~","大声淫叫","淫躯","包臀肉丝","雌骚","壁尻","性感","骚浪","淫贱","上瘾","肏屄","肉奶","乳晕","喘息",
+"烂臭腥臊","屄臭","肥熟","销魂","软糯","奶沟","奶肉","骚香体味","雌肉","肥腻","浓烈","油婊妆容脸","肉奶","无比下流","吸精","骚妈","骚贱母猪","卵液","抽插","吸榨",
+"色情","吮吸","无脑","喷水" ,"意淫","自慰","奶子","抽奶光","奶香","跪","艳舞","调教","颅内高潮","雌熟骚味","理智溶解","贱逼","顶逼","逼肉","骚唇","撩拨嘬吸",
+"肥逼","肉屄","肉套子","贱母猪","臀肉","奶头","喷射奶水","舔","孕肚","揉捏","潮吹","肥硕","雌臭","黏腻","肥尻","傻逼","道德崩坏","三观崩坏","毫无底线","取悦",
+"岔开双腿","猪奶","自毁形象","卵子","疯逼甩臀","丰满","黑逼","烂逼","敏感","黏糊糊","雌熟","雌畜","双眼翻白","淫水","肥软肉浪","肉畜","骚臭","伺候","内射","油脸",
+"腋缝","淫臭","高贵","噗噜噗噜","香汗淋漓","黑屄妓女","肏脸","顶脸","亲吻","崇拜","恶堕","裸露","乳肉","婊子妆","卖逼","妓女","屁股乱晃","口干舌燥","性瘾",
+"挨操","乳环","骚脸","傻屄","媚屌","痴迷","全裸","淫","淫啪","堕落","扭胯","受孕","站街","送逼","母婊","太妹","雌竞","接客","共堕","羞耻",
+"炮友","抠逼","卖逼","校鸡","喷卵","夹腿","淫乱无度","性福","淫笑","伺候","淫乱不堪","闪着淫光","撅着屁股","苗床","避孕套","骚水","操了个爽","勾引","欲火中烧","强忍性欲",
+"谄媚","雌伏","饥渴难耐","上门送逼","欲火难耐","口便器","性侵","做爱","欲求不满","便器","吞精","色欲","卖骚","衣不遮体","满身精液","满身精斑","赤裸","阿黑颜","下等","屈辱",
+"发情","骚浪","精厕","无耻","无底限","献媚","喷逼","肉穴","肏烂","人形飞机杯","奶子","泄欲工具","背德","快感","舔舐","谄媚","抽搐","缠绵","肏穴","受孕",
+"湿润","肉腚","肆意浪叫","吐着舌头","肏晕","孕袋","咕叽咕叽","淫汁","肥腚","淫乱","香艳","露骨","主动服侍","蜜穴","口爆","便器化","崇拜","雌性","灌满子宫","满脸媚意",
+"雌化","湿吻","肉奶","媚肉","乳液","乳首","强制高潮","美熟","雌肥","大奶","腚沟","腥骚","肉屄","臭尿","雌肥","白皙",
+
+        ];
+        const secondTextLibrary = [
+           "黑爹的尿壶","小肉棒禁区","黑人优先","前妻现奴","妈变婊","从妻到畜","良母恶堕","圣女沦陷","跪舔","侍奉",
+"繁殖","吸精","排卵","受孕","产黑","黑人专用","BBC终身会员","劣种","黑屌奴","见黑就跪",
+"BBC万岁","黑人至上","黑屌奴隶","黑种培育皿","精液收集器","一日媚黑，终身为奴","跪舔黑屌","BBC专属","黑屌专属","BBC入口",
+"♠️奴","B>W","黑♂白♀","BBC✓","BNWO","BWC","BOS",
+
+ 
+        ];
+        const thirdTextLibrary = [
+            "操你妈","高跟鞋","低贱","狗篮子","小鸡巴","死精","短鸡巴","夹爆","撸爆浆","烂屌","洗脑","原味","淫妻","小阴蒂","撸废","可悲","淫脚","恶心","猪卵","稀尿精水",
+"流精","处男","哄精","放弃尊严","鸡巴","盯榨吸脑","双腿发软","糜烂","腥臭","浓酸","大臭肉屌","熏到翻白眼","甩屌","榨精","一股脑泄干净","淫毒","精垢","犯贱","禁止射精","顶胯",
+"撸屌","彻底排空","包浆","精汁儿","粉嫩","贱奴","屁眼","狠狠肏我","爆撸","变态","婊子","种汁","黄臭骚精","龟头沟","白嫩","尿垢","尿骚鸡巴垢","腥臊湿咸","浓臭","狗精",
+"熏坏脑子","恋臭肉垫","漏尿","丧智","公狗","骚黄","恶臭","淫骚","愚蠢","稀薄精液","重口","羞辱","下贱","肉虫","翻白眼","失去理智","挤榨睾丸","早泄","垃圾","生殖器",
+"下跪","短屌","大脑死机","骚狗","淫语","哼唧哼唧","鸡鸡牛奶","噗湫噗湫","丝袜","油丝","先走汁","脚汗","贞操锁","淫贱","马眼","流尿","公畜","竖起中指","粘稠精浆","咕啾咕啾",
+"撸射","淫叫","迎合","裤袜","肉茎","逗弄","足下骚狗","撸管","贱兮兮","忍不住射出来","上交脑子","自动憋精","脑瘫","淫脚","熏脑","爽到窒息","一滴不剩","蹂躏碾压","清空精囊","熏坏大脑",
+"龟头","臭气","公猪","劣质","蛋囊","手淫自慰","吻上唇印","精液","蛋蛋","潮红","操","失禁","淫乱骚贱","齁齁齁","播种灌精","杂鱼","粗口爆骂","软小无力","贱种","杂种",
+"轻蔑","包茎","软趴趴","颤抖","又黑又短","劣精","喷浆","前列腺液","泄精","搓你的贱屌","挤出白浆","废物","贱狗","阴茎","瞬间勃起","短小","鸡鸡","骚浪","盯","上瘾",
+"贱死了~","剥夺","包皮","撸动","黄色腥臊污渍","裆部","脏臭","鸡巴汁","无比下流","无脑","烂皮软鸡巴","阳痿","鸡巴头子","喷水","精囊","杂种狗精","意淫","小屌子","跪","撸烂",
+"狗屌","撸","无能","鄙视","屌","贱屌","颅内高潮","弱智","理智溶解","贱鸡巴","吸吮","吸臭","道德崩坏","三观崩坏","毫无底线","交精","取悦","榨干","自毁形象","精子",
+"敏感","黏糊糊","双眼翻白","伺候","下跪","崇拜","恶堕","自毁","跪求","睾丸","身败名裂","精气","磕头","丧志","辱骂","贬低","互骂","无接触撸管","寸止",
+"龟责","无法射精","稀薄","支配","白给","跪舔","男娘","色欲","吞精","张嘴接尿","便器","满身精液","阿黑颜","下等","屈辱","发情","人妖","雌堕","无底限","接盘",
+"绿王八","快感","漏精","舔舐","肆意浪叫","吐着舌头","女装","前高","屁穴","滑精","绿帽","主动服侍","前列腺","药娘","锁娘","顶锁","渴求精液","跨性别","女性化","雌化",
+"绿奴","奴性","抖M","妖妈","榨干","爆吸","怨种","短小无力","憋精","骚精","低能","软屌","驯化","奴下奴","精虫上脑","锅盖锁","乳首","受虐狂","腚沟","撸动",
+"尿渍","射精","勃起","雄臭味","肉棒","大屌","主人","雌杀肉棒","粗硕","公畜","雄根","搓你的贱屌","泄精","巨屌","粗壮","雄性","倒贴","败北","土下座","贱畜",
+        ];
+        const fixedText = "❤️";
+        const websites = {
+            default: [
+                "https://theporndude.com/zh","https://www.pornhub.com",
+        "https://hypnotube.com/index.php","https://www.ixxx.com/zh/",
+        "https://nhentai.net/","https://rule34.xxx/",
+        "https://www.xnxx.com/","https://www.eporner.com/",
+        "https://fikfap.com/","https://tik.porn/",
+        "https://netflav.com/","https://sxyprn.com/",
+        "https://tubesafari.com/","https://www.thumbzilla.com/",
+        "https://www.fuq.com/zh/","https://www.tubegalore.com/zh/","https://www.alohatube.com/",
+        "https://fuckmoral.com/zh","https://beeg.com/",
+        "https://spankbang.com/","https://www.porngo.com/",
+        "https://www.redtube.com/","https://www.youporn.com/",
+        "https://pornone.com/","https://www.3movs.com/",
+        "https://www.tube8.com/","https://av.gl/",
+        "https://avtoday.io/index","http://www.h528.com/",
+        "https://asmrpleasure.com/","https://www.redgifs.com/",
+        "https://m.hqporner.com/","https://porcore.com/",
+        "https://sfmcompile.club/","https://www.naughtymachinima.com/",
+        "https://kemono.su/","https://motherless.com/",
+        "https://txxx.com/","https://fullporner.com/",
+        "https://www.trendyporn.com/","https://veporn.com/",
+        "https://m.drtuber.com/","https://letsjerk.tv/",
+        "https://pornobae.com/","https://pornmz.com/",
+        "https://www.xmegadrive.com/","https://www9.pornhd3x.tv/",
+        "https://joysporn.club/","https://xxxfree.watch/",
+        "https://yespornpleasexxx.com/","https://foxnxx.com/",
+        "https://4kporn.xxx/","https://watchporn.to/",
+        "https://latestpornvideo.com/","https://inporn.com/",
+        "https://anyporn.com/","https://kwiky.com/",
+        "https://www.xxxfollow.com/","https://sharesome.com/news/",
+        "https://ogfap.com/","https://my.club/",
+        "https://hanime1.me/","https://www.avrebo.com/zh-CN",
+        "https://waptap.com/feed","https://swipefap.com/",
+        "https://reelsmunkey.com/","https://xxtok.com/x/uxtsdwc6",
+        "https://www.extranaughty.com/home","https://javtrailers.com/shorts/live",
+        "https://www.heavy-r.com/","https://thisvid.com/",
+        "https://heavyfetish.com/","https://femefun.com/",
+        "https://www.tubebdsm.com/zh/","https://bdsmstreak.com/",
+        "https://l.clips4sale.com/search","https://hypnoporn.net/",
+        "https://hcbdsm.com/","https://cosxplay.com/",
+        "https://69story.com/","https://hhhbook.com/",
+        "https://aaanovel.com/","https://xx-book.com/",
+        "https://xbookcn.net/","https://www.caramelbbw.com/en/",
+        "https://www.naughtyblog.org/","https://www.xtits.com/",
+        "https://bigboobsfilm.com/en/","https://titshits.com/en/",
+        "https://spicybigtits.com/en/","https://www.gigantits.com/",
+        "https://www.curvyerotic.com/","https://www.teensnow.com/",
+        "https://www.assoass.com/zh/","https://www.ass4all.com/",
+        "https://www.ashemaletube.com/","https://x-tg.tube/",
+        "https://www.trannytube.tv/","https://trannyvideosxxx.com/",
+        "https://www.shemaletubevideos.com/","https://shemalez.com/",
+        "https://spicytranny.com/en/","https://transfap.to/",
+        "https://transdoe.com/","https://iamsissy.com/",
+        "https://www.xshemale.tv/","https://www.incestflix.com/",
+        "https://milfnut.com/","https://familyporn.tv/",
+        "https://www.tabootube.xxx/","https://www.incestvidz.com/",
+        "https://familypornhd.com/","https://taboodude.com/",
+        "https://milfcaps.com/home/","https://familyporner.com/",
+        "https://slushe.com/","https://cartoonporn.pro/",
+        "https://www.3dsexanime.xyz/","https://www.zzcartoon.com/",
+        "https://xanimu.com/","https://multporn.net/",
+        "https://allporncomic.com/home-3/","https://8muses.io/",
+        "https://ilikecomix.com/en-comics/","https://myhentaigallery.com/",
+        "https://myhentaicomics.com/","https://svscomics.com/",
+        "https://freeadultcomix.com/","https://freeadultcomix.com/",
+        "https://bestporncomix.com/","https://www.erofus.com/",
+        "https://gedecomix.com/main/","https://en.thehentai.net/",
+        "https://www.palcomix.com/supportpal.html","https://hentaixyuri.com/",
+        "https://hentaixcomic.com/","https://hentaixdickgirl.com/",
+        "https://allporncomics.co/","https://18comic.vip/",
+        "https://www.wnacg.com/","https://18h.mm-cg.com/zh/",
+        "https://www.177picyy.com/","https://www.ho5ho.com/",
+        "https://www.ho5ho.com/","https://rokuhentai.com/",
+        "https://www.comicbox.xyz/index.html","https://syacomic.com/",
+        "https://hentaifox.com/","https://www.simply-hentai.com/web1",
+        "https://9hentai.so/#6g","https://hentairox.com/",
+        "https://asmhentai.com/","https://hentaihere.com/",
+        "https://doujins.com/","https://hentalk.pw/",
+        
+            ],
+            second: [
+                "https://hypnotube.com/channels/19/interracial/","https://cornosecuckolds.com/","https://noodlemagazine.com/video/BBC","https://x.com/EspVlc?s=09","https://www.xvideos.com/channels/bbc-pie",
+"https://www.xvideos.com/channels/down-for-bbc","https://nhentai.net/search/?q=Terasu+MC","https://nhentai.net/search/?q=GiGa","https://nhentai.net/search/?q=ChiHel","https://nhentai.net/search/?q=Poper",
+"https://nhentai.net/search/?q=Cherachera","https://nhentai.net/search/?q=Ratatatat74","https://nhentai.net/search/?q=ankoman","https://nhentai.net/search/?q=%E6%B5%85%E8%91%B1","https://nhentai.net/search/?q=laliberte",
+"https://nhentai.net/search/?q=mamimi","https://nhentai.net/search/?q=dramus","https://nhentai.net/search/?q=%E6%9C%9D%E5%87%AA","https://nhentai.net/search/?q=BBC","https://nhentai.net/search/?q=Tokupyon",
+ "https://nhentai.net/search/?q=YUE+C","https://nhentai.net/artist/iwai-takeshi/","https://nhentai.net/artist/amatake-akewo/","https://nhentai.net/artist/nanquanzl/","https://nhentai.net/artist/odd/",
+ "https://www.bbcparadise.com/b/","https://www.blacktowhite.net/","https://www.darkx.com/","https://www.blackedraw.com/","https://www.blacksonblondes.com/",
+"https://www.cuckoldsessions.com/","https://spankbang.com/s/jav+bbc/","https://xhamster.com/channels/ghetto-confessions-channel", 
+            ],
+            third: [         
+"https://www.ashemaletube.com/","https://x-tg.tube/","https://www.trannytube.tv/","https://trannyvideosxxx.com/","https://cn.pornhub.com/transgender?o=mv&t=t&cc=us",
+"https://xhamster.com/shemale/best","https://www.xvideos.com/shemale","https://sxyprn.com/shemale.html","https://www.shemaletubevideos.com/",
+"https://m.shemalestube.com/","https://spicytranny.com/en/","https://tsthots.com/","https://transfap.to/","https://noodlemagazine.com/video/shemale",
+"https://transdoe.com/","https://iamsissy.com/","https://www.xshemale.tv/","https://www.pornpics.com/shemale/",
+"https://nhentai.net/search/?q=tomgirl",
+
+            ]
+        };
+
+        let autoRefresh = false;
+        let randomColor = false;
+        let isDragging = false;
+        let dragText = null;
+        let textCount = 10;
+        let fontSize = 30;
+        let currentTextLibrary = [...defaultTextLibrary];
+        let currentTextSource = "default";
+        let imageUrl = "https://moe.jitsu.top/img/";
+        let imageReady = false;
+        let preloadedImages = [];
+        let imageIndex = 0;
+        let totalInitialImages = 8;
+        let totalAdditionalImages = 5;
+        let loadedImages = 0;
+
+        let overlayImages = [];
+        let isDraggingOverlay = false;
+        let currentOverlayImage = null;
+        let imageScale = 50;
+        let imageRotation = 0;
+        let overlayImageCount = 1;
+        const overlayImageContainer = document.createElement("div");
+        overlayImageContainer.className = "overlay-image-container";
+        document.querySelector('.container').appendChild(overlayImageContainer);
+
+        const loadingScreen = document.getElementById('loadingScreen');
+        const mainContent = document.getElementById('mainContent');
+        const textContainer = document.getElementById('textContainer');
+        const image = document.getElementById('randomImage');
+        const progressBar = document.getElementById('progressBar');
+        const refreshLoadingButton = document.getElementById('refreshLoadingButton');
+        const refreshImageButton = document.getElementById('refreshImageButton');
+        const generateOverlayButton = document.getElementById('generateOverlayButton');
+        const generateTextButton = document.getElementById('generateTextButton');
+        const imageSourceSelect = document.getElementById('imageSourceSelect');
+        const uploadSection = document.getElementById('uploadSection');
+        const linkSection = document.getElementById('linkSection');
+        const apiSection = document.getElementById('apiSection');
+        const customApiInput = document.getElementById('customApiInput');
+        const customLinkInput = document.getElementById('customLinkInput');
+        const imageUploadInput = document.getElementById('imageUploadInput');
+        const textSourceSelect = document.getElementById('textSourceSelect');
+        const customTextsInput = document.getElementById('customTextsInput');
+        const customTextSection = document.getElementById('customTextSection');
+        const customTextConfirmButton = document.getElementById('customTextConfirmButton');
+        const textControlSelect = document.getElementById('textControlSelect');
+        const textControlContainer = document.getElementById('textControlContainer');
+        const refreshTextButton = document.getElementById('refreshTextButton');
+        const textColorButton = document.getElementById('textColorButton');
+        const dragTextButton = document.getElementById('dragTextButton');
+        const textCountSliderContainer = document.getElementById('textCountSliderContainer');
+        const textSizeSliderContainer = document.getElementById('textSizeSliderContainer');
+        const overlayImageSourceSelect = document.getElementById('overlayImageSourceSelect');
+        const overlayImageUploadSection = document.getElementById('overlayImageUploadSection');
+        const overlayImageLinkSection = document.getElementById('overlayImageLinkSection');
+        const overlayImageUploadInput = document.getElementById('overlayImageUploadInput');
+        const overlayImageUploadConfirmButton = document.getElementById('overlayImageUploadConfirmButton');
+        const overlayImageLinkInput = document.getElementById('overlayImageLinkInput');
+        const overlayImageLinkConfirmButton = document.getElementById('overlayImageLinkConfirmButton');
+        const overlayImageSettingsSelect = document.getElementById('overlayImageSettingsSelect');
+        const overlaySettings = document.getElementById('overlaySettings');
+        const overlayImageRotationSlider = document.getElementById('overlayImageRotationSlider');
+        const overlayImageSizeSlider = document.getElementById('overlayImageSizeSlider');
+        const overlayImageCountSlider = document.getElementById('overlayImageCountSlider');
+        const dragOverlayButton = document.getElementById('dragOverlayButton');
+
+        function startLoading() {
+            loadingScreen.style.display = "flex";
+            progressBar.style.width = "0%";
+            loadedImages = 0;
+        }
+
+        function updateProgress() {
+            loadedImages++;
+            const progress = (loadedImages / (totalInitialImages + totalAdditionalImages)) * 100;
+            progressBar.style.width = `${Math.min(progress, 100)}%`;
+
+            if (loadedImages >= totalInitialImages) {
+                setTimeout(() => {
+                    loadingScreen.style.display = "none";
+                    mainContent.style.opacity = 1;
+                    mainContent.style.display = "block";
+                    generateText();
+                }, 500);
+            }
+        }
+
+        function preloadImages() {
+            startLoading();
+
+            for (let i = 0; i < totalInitialImages; i++) {
+                const img = new Image();
+                img.src = imageUrl + `?time=${Date.now() + i}`;
+                img.onload = function() {
+                    preloadedImages.push(img);
+                    
+                    if (i === 0 && !imageReady) {
+                        image.src = img.src;
+                        imageReady = true;
+                    }
+                    
+                    updateProgress();
+                };
+            }
+        }
+
+        function preloadAdditionalImages() {
+            for (let i = 0; i < totalAdditionalImages; i++) {
+                const img = new Image();
+                img.src = imageUrl + `?time=${Date.now() + totalInitialImages + i}`;
+                img.onload = function() {
+                    preloadedImages.push(img);
+                    updateProgress();
+                };
+            }
+        }
+
+        function getRandomFontStyle() {
+            const styles = [
+                { fontWeight: 'bold', fontStyle: 'normal' },
+                { fontWeight: 'normal', fontStyle: 'italic' },
+                { fontWeight: 'bold', fontStyle: 'italic' },
+                { fontWeight: 'normal', fontStyle: 'normal' }
+            ];
+            return styles[Math.floor(Math.random() * styles.length)];
+        }
+
+        function getRandomTextShadow() {
+            const shadows = [
+                "0 0 2px white, 0 0 2px white",
+                "1px 1px 2px black, 0 0 1em blue",
+                "0 0 5px red, 0 0 10px red",
+                "2px 2px 5px green",
+                "0 0 10px yellow",
+                "none"
+            ];
+            return shadows[Math.floor(Math.random() * shadows.length)];
+        }
+
+        function getRandomLetterSpacing() {
+            const spacings = ["normal", "1px", "2px", "3px", "4px"];
+            return spacings[Math.floor(Math.random() * spacings.length)];
+        }
+
+        function getRandomOpacity() {
+            const opacities = ["1", "0.9", "0.8", "0.7", "0.6"];
+            return opacities[Math.floor(Math.random() * opacities.length)];
+        }
+
+        function generateText() {
+            if (!imageReady) return;
+
+            const imageWidth = image.offsetWidth;
+            const imageHeight = image.offsetHeight;
+
+            const texts = [fixedText, ...Array(textCount - 1).fill().map(() => currentTextLibrary[Math.floor(Math.random() * currentTextLibrary.length)])];
+            texts.forEach(text => {
+                const span = document.createElement("span");
+                span.textContent = text;
+                span.style.position = "absolute";
+                span.style.fontSize = `${fontSize}px`;
+                span.style.color = randomColor ? getRandomColor() : "black";
+                
+                const fontStyle = getRandomFontStyle();
+                if (fontStyle.fontWeight) span.style.fontWeight = fontStyle.fontWeight;
+                if (fontStyle.fontStyle) span.style.fontStyle = fontStyle.fontStyle;
+
+                span.style.textShadow = getRandomTextShadow();
+                span.style.letterSpacing = getRandomLetterSpacing();
+                span.style.opacity = getRandomOpacity();
+
+                textContainer.appendChild(span);
+                placeText(span, textContainer, imageWidth, imageHeight);
+
+                if (!isDragging) {
+                    span.addEventListener("click", () => {
+                        const randomWebsite = websites[currentTextSource][Math.floor(Math.random() * websites[currentTextSource].length)];
+                        window.open(randomWebsite, "_blank");
+                    });
+                }
+            });
+        }
+
+        function placeText(span, textContainer, imageWidth, imageHeight) {
+            let attempts = 0;
+            while (attempts < 100) {
+                const textWidth = span.offsetWidth;
+                const textHeight = span.offsetHeight;
+                const randomX = Math.random() * (imageWidth - textWidth);
+                const randomY = Math.random() * (imageHeight - textHeight);
+                if (!isOverlapping(span, textContainer, randomX, randomY)) {
+                    span.style.left = `${randomX}px`;
+                    span.style.top = `${randomY}px`;
+                    return;
+                }
+                attempts++;
+            }
+        }
+
+        function isOverlapping(span, container, x, y) {
+            const spanRect = {
+                left: x,
+                top: y,
+                right: x + span.offsetWidth,
+                bottom: y + span.offsetHeight
+            };
+            for (const child of container.children) {
+                if (child !== span) {
+                    const childRect = {
+                        left: parseInt(child.style.left, 10),
+                        top: parseInt(child.style.top, 10),
+                        right: parseInt(child.style.left, 10) + child.offsetWidth,
+                        bottom: parseInt(child.style.top, 10) + child.offsetHeight
+                    };
+                    if (!(childRect.right < spanRect.left || childRect.left > spanRect.right ||
+                          childRect.bottom < spanRect.top || childRect.top > spanRect.bottom)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function toggleDragText() {
+            isDragging = !isDragging;
+            dragTextButton.textContent = isDragging ? "关闭自定义拖拽" : "自定义文本位置";
+
+            if (isDragging) {
+                for (const span of textContainer.children) {
+                    span.addEventListener("mousedown", startDrag);
+                    span.addEventListener("touchstart", startDrag);
+                }
+            } else {
+                for (const span of textContainer.children) {
+                    span.addEventListener("click", span.clickListener);
+                    span.removeEventListener("mousedown", startDrag);
+                    span.removeEventListener("touchstart", startDrag);
+                }
+            }
+        }
+
+        function startDrag(event) {
+            const target = event.target;
+            if (target.tagName.toLowerCase() === "span") {
+                dragText = target;
+                document.addEventListener("mousemove", drag);
+                document.addEventListener("touchmove", drag);
+                document.addEventListener("mouseup", stopDrag);
+                document.addEventListener("touchend", stopDrag);
+            }
+        }
+
+        function drag(event) {
+            if (!dragText) return;
+
+            let x, y;
+            if (event.type.startsWith("touch")) {
+                x = event.touches[0].clientX;
+                y = event.touches[0].clientY;
+            } else {
+                x = event.clientX;
+                y = event.clientY;
+            }
+
+            const imageRect = image.getBoundingClientRect();
+            const imageWidth = imageRect.width;
+            const imageHeight = imageRect.height;
+            const textWidth = dragText.offsetWidth;
+            const textHeight = dragText.offsetHeight;
+
+            const newX = Math.max(0, Math.min(x - imageRect.left - textWidth / 2, imageWidth - textWidth));
+            const newY = Math.max(0, Math.min(y - imageRect.top - textHeight / 2, imageHeight - textHeight));
+
+            dragText.style.left = `${newX}px`;
+            dragText.style.top = `${newY}px`;
+        }
+
+        function stopDrag(event) {
+            dragText = null;
+            document.removeEventListener("mousemove", drag);
+            document.removeEventListener("touchmove", drag);
+            document.removeEventListener("mouseup", stopDrag);
+            document.removeEventListener("touchend", stopDrag);
+        }
+
+        function getRandomColor() {
+            const r = Math.floor(Math.random() * 256);
+            const g = Math.floor(Math.random() * 256);
+            const b = Math.floor(Math.random() * 256);
+            return `rgb(${r},${g},${b})`;
+        }
+
+        function updateTextCount(value) {
+            textCount = parseInt(value);
+            textContainer.innerHTML = "";
+            generateText();
+        }
+
+        function updateCustomTexts() {
+            if (currentTextSource === "custom") {
+                if (customTextsInput.value.trim() !== "") {
+                    currentTextLibrary = customTextsInput.value.split(" ");
+                } else {
+                    currentTextLibrary = ["淫词荡语", "媚黑标语", "雌堕洗脑"];
+                }
+                textContainer.innerHTML = "";
+                generateText();
+            }
+        }
+
+        function updateFontSize(value) {
+            fontSize = parseInt(value);
+            textContainer.innerHTML = "";
+            generateText();
+        }
+
+        function refreshImage() {
+            refreshImageButton.style.color = "orange";
+            if (preloadedImages.length > 0) {
+                imageIndex = (imageIndex + 1) % preloadedImages.length;
+                image.src = preloadedImages[imageIndex].src;
+                imageReady = true;
+                textContainer.innerHTML = "";
+                generateText();
+            } else {
+                alert("没有可加载的图片！");
+            }
+            refreshImageButton.style.color = "black";
+        }
+
+        textSourceSelect.addEventListener('change', () => {
+            const selectedSource = textSourceSelect.value;
+            currentTextSource = selectedSource;
+
+            if (selectedSource === "custom") {
+                customTextSection.style.display = "block";
+            } else {
+                customTextSection.style.display = "none";
+            }
+
+            switch(selectedSource) {
+                case "default":
+                    currentTextLibrary = [...defaultTextLibrary];
+                    break;
+                case "second":
+                    currentTextLibrary = [...secondTextLibrary];
+                    break;
+                case "third":
+                    currentTextLibrary = [...thirdTextLibrary];
+                    break;
+                case "custom":
+                    currentTextLibrary = customTextsInput.value.split(" ") || ["自定义文本1", "自定义文本2", "自定义文本3"];
+                    break;
+            }
+
+            textContainer.innerHTML = "";
+            generateText();
+        });
+
+        customTextConfirmButton.addEventListener('click', () => {
+            updateCustomTexts();
+        });
+
+        imageSourceSelect.addEventListener('change', () => {
+            const selectedSource = imageSourceSelect.value;
+            if (selectedSource === "upload") {
+                uploadSection.style.display = "block";
+                linkSection.style.display = "none";
+                apiSection.style.display = "none";
+            } else if (selectedSource === "custom-link") {
+                uploadSection.style.display = "none";
+                linkSection.style.display = "block";
+                apiSection.style.display = "none";
+            } else if (selectedSource === "custom-api") {
+                uploadSection.style.display = "none";
+                linkSection.style.display = "none";
+                apiSection.style.display = "block";
+            } else {
+                uploadSection.style.display = "none";
+                linkSection.style.display = "none";
+                apiSection.style.display = "none";
+            }
+        });
+
+        document.getElementById('uploadConfirmButton').addEventListener('click', () => {
+            const files = imageUploadInput.files;
+            if (files.length === 0) {
+                alert("请选择至少一张图片！");
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                image.src = e.target.result;
+                imageReady = true;
+                textContainer.innerHTML = "";
+                generateText();
+                alert("图片上传成功！");
+            };
+            reader.readAsDataURL(files[0]);
+        });
+
+        document.getElementById('linkConfirmButton').addEventListener('click', () => {
+            const customLink = customLinkInput.value;
+            if (customLink) {
+                const img = new Image();
+                img.src = customLink;
+                img.onload = function() {
+                    image.src = customLink;
+                    imageReady = true;
+                    textContainer.innerHTML = "";
+                    generateText();
+                    alert("图片链接加载成功！");
+                };
+                img.onerror = function() {
+                    alert("加载失败，请检查链接是否正确！");
+                };
+            } else {
+                alert("请输入一个有效的图片链接！");
+            }
+        });
+
+        document.getElementById('apiConfirmButton').addEventListener('click', () => {
+            const customApi = customApiInput.value;
+            if (customApi) {
+                imageUrl = customApi;
+                alert("自定义API设置成功！");
+                preloadImages();
+            } else {
+                alert("请输入一个有效的API！");
+            }
+        });
+
+        refreshLoadingButton.addEventListener('click', () => {
+            loadingScreen.style.display = "none";
+            mainContent.style.opacity = 1;
+            mainContent.style.display = "block";
+            if (imageReady) {
+                generateText();
+            } else {
+                const placeholderText = document.createElement("div");
+                placeholderText.textContent = "图片加载中，请稍候...";
+                placeholderText.style.textAlign = "center";
+                placeholderText.style.marginTop = "20px";
+                document.querySelector('.container').appendChild(placeholderText);
+            }
+        });
+
+        window.onload = () => {
+            preloadImages();
+
+            document.getElementById('refreshImageButton').addEventListener('click', refreshImage);
+
+            generateOverlayButton.addEventListener('click', () => {
+                while (overlayImageContainer.firstChild) {
+                    overlayImageContainer.removeChild(overlayImageContainer.firstChild);
+                }
+
+                if (overlayImages.length > 0) {
+                    const count = Math.min(overlayImageCount, overlayImages.length);
+                    for (let i = 0; i < count; i++) {
+                        const randomIndex = Math.floor(Math.random() * overlayImages.length);
+                        addOverlayImage(overlayImages[randomIndex]);
+                    }
+                }
+            });
+
+            generateTextButton.addEventListener('click', () => {
+                textContainer.innerHTML = "";
+                generateText();
+            });
+
+            textControlSelect.addEventListener('change', () => {
+                const selectedControl = textControlSelect.value;
+                if (selectedControl !== 'none') {
+                    textControlContainer.style.display = 'flex';
+                } else {
+                    textControlContainer.style.display = 'none';
+                }
+
+                refreshTextButton.style.display = 'none';
+                textColorButton.style.display = 'none';
+                dragTextButton.style.display = 'none';
+                textCountSliderContainer.style.display = 'none';
+                textSizeSliderContainer.style.display = 'none';
+
+                if (selectedControl === 'refresh') {
+                    refreshTextButton.style.display = 'block';
+                } else if (selectedControl === 'color') {
+                    textColorButton.style.display = 'block';
+                } else if (selectedControl === 'drag') {
+                    dragTextButton.style.display = 'block';
+                } else if (selectedControl === 'count') {
+                    textCountSliderContainer.style.display = 'flex';
+                } else if (selectedControl === 'size') {
+                    textSizeSliderContainer.style.display = 'flex';
+                }
+            });
+
+            refreshTextButton.addEventListener('click', () => {
+                const imageWidth = image.offsetWidth;
+                const imageHeight = image.offsetHeight;
+                for (const span of textContainer.children) {
+                    const textWidth = span.offsetWidth;
+                    const textHeight = span.offsetHeight;
+                    const randomX = Math.random() * (imageWidth - textWidth);
+                    const randomY = Math.random() * (imageHeight - textHeight);
+                    span.style.left = `${randomX}px`;
+                    span.style.top = `${randomY}px`;
+                }
+            });
+
+            textColorButton.addEventListener('click', () => {
+                randomColor = !randomColor;
+                textColorButton.textContent = randomColor ? "黑色文本显示" : "彩色文本显示";
+                textContainer.innerHTML = "";
+                generateText();
+            });
+
+            dragTextButton.addEventListener('click', () => {
+                isDragging = !isDragging;
+                dragTextButton.textContent = isDragging ? "关闭自定义拖拽" : "自定义文本位置";
+
+                if (isDragging) {
+                    for (const span of textContainer.children) {
+                        span.addEventListener("mousedown", startDrag);
+                        span.addEventListener("touchstart", startDrag);
+                    }
+                } else {
+                    for (const span of textContainer.children) {
+                        span.addEventListener("click", span.clickListener);
+                        span.removeEventListener("mousedown", startDrag);
+                        span.removeEventListener("touchstart", startDrag);
+                    }
+                }
+            });
+
+            document.getElementById('textCountSlider').addEventListener('input', (e) => {
+                updateTextCount(e.target.value);
+            });
+
+            document.getElementById('fontSizeSlider').addEventListener('input', (e) => {
+                updateFontSize(e.target.value);
+            });
+
+            overlayImageSourceSelect.addEventListener('change', () => {
+                const selectedSource = overlayImageSourceSelect.value;
+                if (selectedSource === 'upload') {
+                    overlayImageUploadSection.style.display = 'block';
+                    overlayImageLinkSection.style.display = 'none';
+                } else if (selectedSource === 'custom-link') {
+                    overlayImageUploadSection.style.display = 'none';
+                    overlayImageLinkSection.style.display = 'block';
+                } else {
+                    overlayImageUploadSection.style.display = 'none';
+                    overlayImageLinkSection.style.display = 'none';
+                }
+            });
+
+            overlayImageUploadInput.addEventListener('change', () => {
+                const files = overlayImageUploadInput.files;
+                if (files.length === 0) return;
+                
+                overlayImages = [];
+                for (let i = 0; i < files.length; i++) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = new Image();
+                        img.src = e.target.result;
+                        img.onload = function() {
+                            overlayImages.push(img);
+                        };
+                    };
+                    reader.readAsDataURL(files[i]);
+                }
+            });
+
+            overlayImageUploadConfirmButton.addEventListener('click', () => {
+                if (overlayImages.length > 0) {
+                    addOverlayImage(overlayImages[0]);
+                } else {
+                    alert("请先上传图片！");
+                }
+            });
+
+            overlayImageLinkConfirmButton.addEventListener('click', () => {
+                const customLink = overlayImageLinkInput.value;
+                if (customLink) {
+                    const img = new Image();
+                    img.src = customLink;
+                    img.onload = function() {
+                        overlayImages.push(img);
+                        addOverlayImage(img);
+                    };
+                    img.onerror = function() {
+                        alert("加载失败，请检查链接是否正确！");
+                    };
+                } else {
+                    alert("请输入一个有效的图片链接！");
+                }
+            });
+
+            overlayImageSettingsSelect.addEventListener('change', () => {
+                const selectedSetting = overlayImageSettingsSelect.value;
+                if (selectedSetting !== 'none') {
+                    overlaySettings.style.display = 'block';
+                } else {
+                    overlaySettings.style.display = 'none';
+                }
+
+                document.getElementById('overlayImageRotationSlider-container').style.display = 'none';
+                document.getElementById('overlayImageSizeSlider-container').style.display = 'none';
+                document.getElementById('overlayImageCountSlider-container').style.display = 'none';
+                document.getElementById('dragOverlayButton').style.display = 'none';
+
+                if (selectedSetting === 'rotate') {
+                    document.getElementById('overlayImageRotationSlider-container').style.display = 'block';
+                } else if (selectedSetting === 'resize') {
+                    document.getElementById('overlayImageSizeSlider-container').style.display = 'block';
+                } else if (selectedSetting === 'drag') {
+                    document.getElementById('dragOverlayButton').style.display = 'block';
+                } else if (selectedSetting === 'count') {
+                    document.getElementById('overlayImageCountSlider-container').style.display = 'block';
+                }
+            });
+
+            overlayImageRotationSlider.addEventListener('input', (e) => {
+                imageRotation = parseInt(e.target.value);
+                updateOverlayImageStyle();
+            });
+
+            overlayImageSizeSlider.addEventListener('input', (e) => {
+                imageScale = parseInt(e.target.value);
+                updateOverlayImageStyle();
+            });
+
+            overlayImageCountSlider.addEventListener('input', (e) => {
+                overlayImageCount = parseInt(e.target.value);
+            });
+
+            dragOverlayButton.addEventListener('click', () => {
+                isDraggingOverlay = !isDraggingOverlay;
+                dragOverlayButton.textContent = isDraggingOverlay ? "关闭自定义拖拽" : "自定义叠加图片位置";
+                
+                if (isDraggingOverlay) {
+                    for (const img of overlayImageContainer.children) {
+                        img.addEventListener("mousedown", startOverlayDrag);
+                        img.addEventListener("touchstart", startOverlayDrag);
+                    }
+                } else {
+                    for (const img of overlayImageContainer.children) {
+                        img.removeEventListener("mousedown", startOverlayDrag);
+                        img.removeEventListener("touchstart", startOverlayDrag);
+                    }
+                }
+            });
+        };
+
+        function addOverlayImage(img) {
+            const overlayImage = document.createElement("img");
+            overlayImage.src = img.src;
+            overlayImage.className = "overlay-image";
+            
+            const imageWidth = image.offsetWidth;
+            const imageHeight = image.offsetHeight;
+
+            const boundingBox = getTransformedBoundingBox(img, imageScale / 100, imageRotation);
+            const overlayWidth = boundingBox.width;
+            const overlayHeight = boundingBox.height;
+
+            const maxLeft = imageWidth - overlayWidth;
+            const maxTop = imageHeight - overlayHeight;
+
+            const randomX = Math.random() * maxLeft;
+            const randomY = Math.random() * maxTop;
+
+            overlayImage.style.left = `${randomX}px`;
+            overlayImage.style.top = `${randomY}px`;
+            overlayImage.style.transform = `scale(${imageScale / 100}) rotate(${imageRotation}deg)`;
+            overlayImage.style.transformOrigin = "center";
+
+            overlayImageContainer.appendChild(overlayImage);
+        }
+
+        function getTransformedBoundingBox(img, scale, rotation) {
+            const originalWidth = img.width;
+            const originalHeight = img.height;
+
+            const rad = rotation * Math.PI / 180;
+            const cos = Math.abs(Math.cos(rad));
+            const sin = Math.abs(Math.sin(rad));
+            const newWidth = originalWidth * cos + originalHeight * sin;
+            const newHeight = originalHeight * cos + originalWidth * sin;
+
+            const scaledWidth = newWidth * scale;
+            const scaledHeight = newHeight * scale;
+
+            return { width: scaledWidth, height: scaledHeight };
+        }
+
+        function updateOverlayImageStyle() {
+            for (const img of overlayImageContainer.children) {
+                img.style.transform = `scale(${imageScale / 100}) rotate(${imageRotation}deg)`;
+                img.style.transformOrigin = "center";
+            }
+        }
+
+        function startOverlayDrag(event) {
+            const overlayImage = event.target;
+            currentOverlayImage = overlayImage;
+            document.addEventListener("mousemove", overlayDrag);
+            document.addEventListener("touchmove", overlayDrag);
+            document.addEventListener("mouseup", stopOverlayDrag);
+            document.addEventListener("touchend", stopOverlayDrag);
+        }
+
+        function overlayDrag(event) {
+            if (!currentOverlayImage) return;
+
+            let x, y;
+            if (event.type.startsWith("touch")) {
+                x = event.touches[0].clientX;
+                y = event.touches[0].clientY;
+            } else {
+                x = event.clientX;
+                y = event.clientY;
+            }
+
+            const containerRect = image.getBoundingClientRect();
+            const imageWidth = containerRect.width;
+            const imageHeight = containerRect.height;
+            
+            const overlayImageRect = currentOverlayImage.getBoundingClientRect();
+            const overlayImageWidth = overlayImageRect.width;
+            const overlayImageHeight = overlayImageRect.height;
+
+            const scale = imageScale / 100;
+            const scaledWidth = overlayImageWidth / scale;
+            const scaledHeight = overlayImageHeight / scale;
+
+            const newX = Math.max(0, Math.min(x - containerRect.left - scaledWidth / 2, imageWidth - scaledWidth));
+            const newY = Math.max(0, Math.min(y - containerRect.top - scaledHeight / 2, imageHeight - scaledHeight));
+
+            currentOverlayImage.style.left = `${newX}px`;
+            currentOverlayImage.style.top = `${newY}px`;
+        }
+
+        function stopOverlayDrag(event) {
+            currentOverlayImage = null;
+            document.removeEventListener("mousemove", overlayDrag);
+            document.removeEventListener("touchmove", overlayDrag);
+            document.removeEventListener("mouseup", stopOverlayDrag);
+            document.removeEventListener("touchend", stopOverlayDrag);
+        }
+
+        overlayImageSourceSelect.addEventListener('change', () => {
+            const selectedSource = overlayImageSourceSelect.value;
+            if (selectedSource === 'blank') {
+                while (overlayImageContainer.firstChild) {
+                    overlayImageContainer.removeChild(overlayImageContainer.firstChild);
+                }
+            }
+        });
+    </script>
+
+    <div class="footer">
+        提示：请不要使用该页面制作侵犯他人肖像权名誉权等作品
+    </div>
+</body>
+</html>
